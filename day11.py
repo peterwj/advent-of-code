@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import unittest
 
 class TestDay11(unittest.TestCase):
@@ -75,5 +76,6 @@ def next_password(password):
     return "".join(password)
 
 if __name__ == '__main__':
-    print(find_new_password('hepxcrrq'))
-    unittest.main()
+    if len(sys.argv) < 2:
+        unittest.main()
+    print(find_new_password(sys.argv[1]))
