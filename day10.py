@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import unittest
 
 def count_first_char(s):
@@ -36,5 +37,8 @@ def do_problem(iterations, s):
     print(len(s))
 
 if __name__ == '__main__':
-    do_problem(40, '1113222113')
-    unittest.main()
+    if len(sys.argv) != 3:
+        print('Usage: {} [iteration count] [sequence]'.format(sys.argv[0]))
+        print('Running tests instead.')
+        unittest.main()
+    do_problem(int(sys.argv[1]), sys.argv[2])
