@@ -37,24 +37,32 @@ def classify_range(instruction):
 		coords.append((int(pair[0]), int(pair[1])))
 	return (coords[0], coords[1])
 
-def mutate_board(board, instruction):
+def mutate_board(board, instruction, gradients=False):
 	mode = classify_mode(instruction)
 	(start, end) = classify_range(instruction)
 
 	for row in range(start[0], end[0]+1):
 		for col in range(start[1], end[1]+1):
-			if mode == Mode.turn_on:
-				board[row][col] = True
-			elif mode == Mode.turn_off:
-				board[row][col] = False
-			elif mode == Mode.toggle:
-				board[row][col] = not board[row][col]
+			if gradients:
+				if mode == Mode.turn_on:
+					board[row][col] += 1
+				elif mode == Mode.turn_off:
+					board[row][col] -= (1 if board[row][col] > 0 else 0)
+				elif mode == Mode.toggle:
+					board[row][col] += 2
+			else:
+				if mode == Mode.turn_on:
+					board[row][col] = True
+				elif mode == Mode.turn_off:
+					board[row][col] = False
+				elif mode == Mode.toggle:
+					board[row][col] = not board[row][col]
 
-def count_lights(filename):
-	board = np.zeros((1000,1000), dtype=bool)
+def count_lights(filename, gradients=False):
+	board = np.zeros((1000,1000))
 	with open(filename, 'r') as f:
 		for instruction in f:
-			mutate_board(board, instruction)
+			mutate_board(board, instruction, gradients=gradients)
 	print('{} lights on'.format(sum(sum(board))))
 
 class TestSmegma(unittest.TestCase):
@@ -79,5 +87,5 @@ class TestSmegma(unittest.TestCase):
 		assert(sum(sum(board)) == 0)
 
 if __name__ == '__main__':
-	count_lights('inputs/day06.txt')
+	count_lights('inputs/day06.txt', gradients=True)
 	unittest.main()
