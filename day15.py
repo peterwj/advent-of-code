@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from pulp import *
+import random
 from sys import argv as argv
 import unittest
 
@@ -36,10 +36,9 @@ class Recipe():
     def __init__(self, ingredients, ignored_attributes=[]):
         """Pass in a mapping of ingredient to quantity in ingredients."""
         self.recipe_attributes = {}
+        self.ignored_attributes = ignored_attributes
         for ingredient, quantity in ingredients.items():
             for attribute, effect in ingredient.attributes.items():
-                if attribute in ignored_attributes:
-                    continue
                 if attribute not in self.recipe_attributes:
                     self.recipe_attributes[attribute] = 0
                 self.recipe_attributes[attribute] += quantity * effect
@@ -48,13 +47,13 @@ class Recipe():
     def score(self):
         score = 1
         for attribute, effect in self.recipe_attributes.items():
-            score *= effect
-            continue
-            if isinstance(effect, int):
-                score *= effect if effect > 0 else 0
-            else:
-                score *= effect if effect > LpAffineExpression(constant=0) else 0
+            if attribute in self.ignored_attributes:
+                continue
+            score *= effect if effect > 0 else 0
         return score
+
+    def get_attribute(self, attribute):
+        return self.recipe_attributes[attribute]
 
 def read_ingredient_file(ingredient_file):
     ingredients = []
@@ -63,24 +62,26 @@ def read_ingredient_file(ingredient_file):
     return ingredients
 
 
-def optimize_recipe(ingredient_file):
+def optimize_recipe(ingredient_file, calorie_value=None):
+    best_score = 0
     ingredients = read_ingredient_file(ingredient_file)
-    problem = LpProblem('Recipe optmization', LpMaximize)
-    params = {}
-    for ingredient in ingredients:
-        params[ingredient] = LpVariable(ingredient.name, 0, 100, LpInteger)
-
-    problem += Recipe(
-        ingredients={ingredient: param for ingredient, param in params.items()},
-        ignored_attributes=['calories'],
-    ).score, 'maximize recipe score'
-
-    problem += sum(params.values()) == 100 
-    problem.writeLP('Recipe.lp')
-    problem.solve()
+    while True:
+        quantities = [random.randint(0,100) for i in range(len(ingredients)-1)]
+        quantities.append(100 - sum(quantities))
+        if any([x < 0 for x in quantities]):
+            continue
+        ingredients = zip(ingredients, quantities)
+        ingredients = {k:v for (k,v) in ingredients}
+        recipe = Recipe(ingredients, ['calories'])
+        if calorie_value and recipe.get_attribute('calories') != calorie_value:
+            continue
+        score = recipe.score
+        if score > best_score:
+            best_score = score
+            print(best_score)
 
 if __name__ == '__main__':
     if len(argv) == 2:
-        optimize_recipe(argv[1])
+        optimize_recipe(argv[1], calorie_value=500)
     else:
         unittest.main()
