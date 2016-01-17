@@ -33,6 +33,14 @@ class MFCSAM():
     def __getitem__(self,name):
         return self._items[name]
 
+def is_match(sue, mfcsam, item, part_two=False):
+    if part_two:
+        if item in ['cats', 'trees']:
+            return sue[item] > mfcsam[item]
+        elif item in ['pomeranians', 'goldfish']:
+            return sue[item] < mfcsam[item]
+    return sue[item] == mfcsam[item]
+
 def do_problem(sues_file, mfcsam_file):
     sues = {}
     with open(sues_file) as f:
@@ -44,7 +52,7 @@ def do_problem(sues_file, mfcsam_file):
     for i,sue in sues.items():
         sue_score = 0
         for item,count in sue.items.items():
-            if count == mfcsam[item]:
+            if is_match(sue, mfcsam, item, part_two=True):
                 sue_score += 1
         if sue_score == 3:
             print(i)
