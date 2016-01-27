@@ -9,6 +9,7 @@ class Instruction:
         self._op = s.split(' ')[0]
         s = s.replace('+', '')
         s = s.replace(',', '')
+        s = s.replace('\n', '')
         self._i = OPCODE_MAP[self._op](s)
         self._register = self._i.register
         self._offset = self._i.offset
@@ -25,7 +26,7 @@ class Instruction:
 class ProgramState:
     def __init__(self, instruction_strings):
         self.registers = {
-                'a': 0,
+                'a': 1,
                 'b': 0,
         }
         self.pc = 0 # index into the array of instructions
@@ -101,5 +102,13 @@ class TestDay23(TestCase):
         assert(ps.registers['a'] == 2)
 
 if __name__ == '__main__':
-    main()
+    if len(argv) > 1:
+        filename = argv[1]
+        with open(filename) as f:
+            ps = ProgramState(f.readlines())
+            ps.run()
+            register = 'b'
+            print('register {} = {}'.format(register, ps.registers[register]))
+    else:
+        main()
 
